@@ -1,181 +1,103 @@
-📰 Fake News Detector using NLP and Logistic Regression
-Complete Project with Code and Explanation – Line by Line
+**📰 Fake News Detector using NLP & Machine Learning
+📌 Project Overview
+This project is a machine learning solution to classify whether a news headline is fake or real using Natural Language Processing (NLP) techniques. The model is trained on a real-world dataset and deployed using Streamlit for live interaction.**
 
-This project detects fake news using a Logistic Regression model trained on TF-IDF vectorized text. It includes full preprocessing using NLTK and is deployment-ready via a Streamlit app. Below is the complete .ipynb code with detailed explanations for every step.
+**🎯 Objective**
+To build a text classification model that can detect fake news headlines.
 
-🔹 Import Required Libraries
-python
-Copy
-Edit
-import numpy as np
-import pandas as pd
-import re
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-import pickle
-from nltk.tokenize import word_tokenize
-import os
-numpy, pandas: For data manipulation.
+To apply NLP preprocessing such as stopword removal and lemmatization.
 
-re: Regular expressions for text cleaning.
+To transform text into numerical data using TF-IDF Vectorization.
 
-nltk: To handle stopwords, tokenization, and lemmatization.
+To deploy the model into an interactive web app using Streamlit.
 
-sklearn: For vectorization, model training, splitting, and accuracy.
+**📂 Dataset Information**
+The dataset was taken from Kaggle's Fake News Challenge.
 
-pickle: To save model and vectorizer for deployment.
+It includes headline, author, and label columns.
 
-🔹 Load and Explore the Dataset
-python
-Copy
-Edit
-new_df = pd.read_csv('train.csv')
-new_df.head()
-Loads the dataset train.csv and displays the top 5 rows.
+The label 1 represents Fake, while 0 represents Real news.
 
-python
-Copy
-Edit
-new_df.shape  # 20800 rows and 5 columns
-Shows the dataset contains 20800 records and 5 columns.
+For this project, only author and title columns were merged and used for training.
 
-python
-Copy
-Edit
-new_df.isnull().sum()
-Checks for missing/null values in each column.
+**🧠 Project Workflow**
+🔹 1. Data Cleaning
+All missing values were filled with a space " " instead of dropping rows.
 
-🔹 Handle Missing Values
-python
-Copy
-Edit
-new_df = new_df.fillna(' ')
-new_df.isnull().sum()
-Fills all missing values with blank strings.
+Two text-based columns author and title were merged to create a new column called content.
 
-This retains the original dataset size rather than dropping rows.
+**🔹 2. Text Preprocessing**
+Converted all text to lowercase.
 
-🔹 Combine Author and Title into One Column
-python
-Copy
-Edit
-new_df['content'] = new_df['author'] + " " + new_df['title']
-new_df.head()
-Combines the author and title columns into a single text column named content.
+Removed special characters and digits using regular expressions.
 
-This is the text we'll later clean and use to predict fake or real news.
+Applied tokenization to split text into words.
 
-🔹 Setup Preprocessing Tools
-python
-Copy
-Edit
-stop_words = set(stopwords.words('english'))
-lemmatizer = WordNetLemmatizer()
-Loads a set of English stopwords and initializes the lemmatizer.
+Removed stopwords (common words that do not add meaning).
 
-🔹 Define Text Preprocessing Function
-python
-Copy
-Edit
-def preprocess(text):
-    text = text.lower()  # Lowercase conversion
-    text = re.sub(r'[^a-zA-Z]', ' ', text)  # Remove special characters and digits
-    tokens = word_tokenize(text)  # Tokenize the text
-    cleaned = []
-    for word in tokens:
-        if word not in stop_words and word.isalnum():
-            lemma = lemmatizer.lemmatize(word, pos='v')  # Lemmatize the word
-            cleaned.append(lemma)
-    return " ".join(cleaned)
-This function:
+Used lemmatization to reduce words to their base form (e.g., "running" → "run").
 
-Converts text to lowercase
+**🔹 3. Feature Extraction**
+Used TF-IDF Vectorization to convert the cleaned text into numerical features.
 
-Removes unwanted characters
+Limited to the top 5000 features for performance.
 
-Tokenizes the sentence
+**🔹 4. Model Building**
+Split the data into 80% training and 20% testing sets.
 
-Removes stopwords and punctuation
+Trained a Logistic Regression model using the training set.
 
-Lemmatizes each word to its base form
+Evaluated the model on the test set and achieved high accuracy.
 
-🔹 Apply Preprocessing to Dataset
-python
-Copy
-Edit
-new_df['cleaned_content'] = new_df['content'].apply(preprocess)
-print(new_df['cleaned_content'][1])
-Applies the preprocess() function to every row in the content column.
+**🔹 5. Model Saving**
+The trained model and vectorizer were saved as .pkl files using pickle for future use or deployment.
 
-The cleaned result is stored in a new column called cleaned_content.
+**🔹 6. Web App Deployment**
+Built an interactive web app using Streamlit where users can input any news headline.
 
-🔹 Convert Text to Vectors Using TF-IDF
-python
-Copy
-Edit
-vectorizer = TfidfVectorizer(max_features=5000)
-X = vectorizer.fit_transform(new_df['cleaned_content']).toarray()
-y = new_df['label']
-Transforms the cleaned text into numerical features using TF-IDF.
+On clicking “Check,” the app preprocesses the text, vectorizes it, and then classifies it as either:
 
-Limits the vocabulary to the top 5000 words.
+✅ Real News
 
-X: Features for the model, y: Labels (0 = Real, 1 = Fake)
+❌ Fake News
 
-🔹 Split the Data into Training and Test Sets
-python
-Copy
-Edit
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-Splits the dataset into 80% training and 20% testing data.
+**🌟 Key Features**
+Full end-to-end project from data preprocessing to deployment.
 
-🔹 Train the Logistic Regression Model
-python
-Copy
-Edit
-model = LogisticRegression()
-model.fit(X_train, y_train)
-Creates and trains a logistic regression model using the training data.
+User-friendly Streamlit interface to test model predictions.
 
-🔹 Evaluate the Model
-python
-Copy
-Edit
-y_pred = model.predict(X_test)
-acc = accuracy_score(y_test, y_pred)
-print(f"✅ Model Accuracy: {acc:.4f}")
-Predicts on the test set and prints the model’s accuracy.
+Robust NLP techniques for clean and meaningful data preparation.
 
-🔹 Save the Model and Vectorizer
-python
-Copy
-Edit
-with open('fake_news_model.pkl', 'wb') as f:
-    pickle.dump(model, f)
+Light-weight model using Logistic Regression for fast execution.
 
-with open('vectorizer.pkl', 'wb') as f:
-    pickle.dump(vectorizer, f)
+Easily scalable and extendable for future improvements.
 
-print("🎉 Model and vectorizer saved successfully.")
-Saves both the model and vectorizer into .pkl files using pickle.
+**⚠️ Challenges Faced**
+Cleaning the text effectively while maintaining meaning.
 
-These files will be used later for prediction in the frontend app.
+Ensuring that NLTK stopwords and lemmatizer libraries are properly downloaded.
 
-✅ Summary of Pipeline
-Loaded and cleaned the dataset
+Managing paths when saving/loading .pkl files across environments.
 
-Combined text columns into one
+Streamlit throwing errors on invalid inputs or incorrect model path.
 
-Preprocessed and lemmatized the text
+**🚀 Future Enhancements**
+Replace Logistic Regression with Transformer-based models like BERT for better accuracy.
 
-Vectorized the text using TF-IDF
+Use full article text (not just titles and authors) for better context.
 
-Trained a logistic regression model
+Add visualization dashboards showing common fake news words or trends.
 
-Evaluated and saved the model for deployment
+Deploy the app using Hugging Face Spaces, Render, or AWS Lambda for wider access.
 
-You can now use this trained model and vectorizer in your Streamlit web app (app.py) to create a real-time Fake News Detector!
+**💡 What I Learned**
+Hands-on experience with NLP techniques such as preprocessing, TF-IDF, and lemmatization.
+
+Solidified understanding of the machine learning pipeline.
+
+Learned how to deploy a real-time ML app using Streamlit.
+
+Understood the importance of handling data imbalance, cleaning, and model evaluation.
+
+**🙌 Final Thoughts**
+This project not only helped me understand how fake news can be automatically detected using machine learning and NLP but also gave me the confidence to take a project from scratch to production. It reflects the ability to build scalable AI applications and is a valuable addition to my machine learning portfolio.
