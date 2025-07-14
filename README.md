@@ -1,8 +1,12 @@
-# Fake_News_Detector_NLP
+📰 Fake News Detector using NLP and Logistic Regression
+Complete Project with Code and Explanation – Line by Line
 
-**Full Project Explanation: Fake News Detector using NLP (Jupyter Notebook)
-This notebook walks through the complete end-to-end pipeline for building a Fake News Detection system using Natural Language Processing (NLP) and Logistic Regression. The model is trained on a labeled dataset and saved for use in a web app later.**
+This project detects fake news using a Logistic Regression model trained on TF-IDF vectorized text. It includes full preprocessing using NLTK and is deployment-ready via a Streamlit app. Below is the complete .ipynb code with detailed explanations for every step.
 
+🔹 Import Required Libraries
+python
+Copy
+Edit
 import numpy as np
 import pandas as pd
 import re
@@ -15,136 +19,163 @@ from sklearn.metrics import accuracy_score
 import pickle
 from nltk.tokenize import word_tokenize
 import os
+numpy, pandas: For data manipulation.
 
-✅ Purpose: Load all the necessary libraries for:
+re: Regular expressions for text cleaning.
 
-Data manipulation (pandas, numpy)
+nltk: To handle stopwords, tokenization, and lemmatization.
 
-Text preprocessing (nltk, re)
+sklearn: For vectorization, model training, splitting, and accuracy.
 
-Model training & evaluation (scikit-learn)
+pickle: To save model and vectorizer for deployment.
 
-Saving model (pickle)
-
-Step 2: Load Dataset
-
+🔹 Load and Explore the Dataset
+python
+Copy
+Edit
 new_df = pd.read_csv('train.csv')
 new_df.head()
-new_df.shape
+Loads the dataset train.csv and displays the top 5 rows.
 
-📘 Dataset: train.csv with 20800 rows and 5 columns
+python
+Copy
+Edit
+new_df.shape  # 20800 rows and 5 columns
+Shows the dataset contains 20800 records and 5 columns.
 
-🔹 Step 3: Handle Missing Values
-
+python
+Copy
+Edit
 new_df.isnull().sum()
+Checks for missing/null values in each column.
+
+🔹 Handle Missing Values
+python
+Copy
+Edit
 new_df = new_df.fillna(' ')
+new_df.isnull().sum()
+Fills all missing values with blank strings.
 
-Missing values are filled with blank spaces instead of being dropped.
+This retains the original dataset size rather than dropping rows.
 
-✅ Rationale: Data is not too large, so we retain all rows and preserve context.
-
-🔹 Step 4: Feature Engineering
-
+🔹 Combine Author and Title into One Column
+python
+Copy
+Edit
 new_df['content'] = new_df['author'] + " " + new_df['title']
+new_df.head()
+Combines the author and title columns into a single text column named content.
 
-📌 Created a new column: content, which is a combination of author and title — useful for semantic understanding.
+This is the text we'll later clean and use to predict fake or real news.
 
-🔹 Step 5: Preprocessing Text
-
+🔹 Setup Preprocessing Tools
+python
+Copy
+Edit
 stop_words = set(stopwords.words('english'))
 lemmatizer = WordNetLemmatizer()
+Loads a set of English stopwords and initializes the lemmatizer.
 
-Defined a stopword list and lemmatizer for preprocessing.
-
+🔹 Define Text Preprocessing Function
+python
+Copy
+Edit
 def preprocess(text):
-    text = text.lower()
-    text = re.sub(r'[^a-zA-Z]', ' ', text)
-    tokens = word_tokenize(text)
+    text = text.lower()  # Lowercase conversion
+    text = re.sub(r'[^a-zA-Z]', ' ', text)  # Remove special characters and digits
+    tokens = word_tokenize(text)  # Tokenize the text
     cleaned = []
     for word in tokens:
         if word not in stop_words and word.isalnum():
-            lemma = lemmatizer.lemmatize(word, pos='v')
+            lemma = lemmatizer.lemmatize(word, pos='v')  # Lemmatize the word
             cleaned.append(lemma)
     return " ".join(cleaned)
+This function:
 
-🔍 What this function does:
+Converts text to lowercase
 
-Lowercases all text
+Removes unwanted characters
 
-Removes non-alphabet characters
+Tokenizes the sentence
 
-Tokenizes using word_tokenize
+Removes stopwords and punctuation
 
-Removes stopwords
+Lemmatizes each word to its base form
 
-Applies lemmatization (converts words to their base form)
-
+🔹 Apply Preprocessing to Dataset
+python
+Copy
+Edit
 new_df['cleaned_content'] = new_df['content'].apply(preprocess)
+print(new_df['cleaned_content'][1])
+Applies the preprocess() function to every row in the content column.
 
-✅ Cleaned text is stored in a new column cleaned_content
+The cleaned result is stored in a new column called cleaned_content.
 
-🔹 Step 6: Vectorization using TF-IDF
-
+🔹 Convert Text to Vectors Using TF-IDF
+python
+Copy
+Edit
 vectorizer = TfidfVectorizer(max_features=5000)
 X = vectorizer.fit_transform(new_df['cleaned_content']).toarray()
 y = new_df['label']
+Transforms the cleaned text into numerical features using TF-IDF.
 
-Transformed cleaned text into numerical format using TF-IDF
+Limits the vocabulary to the top 5000 words.
 
-Limited to top 5000 features to reduce dimensionality
+X: Features for the model, y: Labels (0 = Real, 1 = Fake)
 
-X → Features (vectors), y → Target labels (0: Real, 1: Fake)
-
-🔹 Step 7: Split Data into Train & Test Sets
-
+🔹 Split the Data into Training and Test Sets
+python
+Copy
+Edit
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+Splits the dataset into 80% training and 20% testing data.
 
-80% for training, 20% for testing
-
-Set random_state=42 for reproducibility
-
-🔹 Step 8: Train Logistic Regression Model
-
+🔹 Train the Logistic Regression Model
+python
+Copy
+Edit
 model = LogisticRegression()
 model.fit(X_train, y_train)
+Creates and trains a logistic regression model using the training data.
 
-✅ Trained a simple yet effective binary classification model using Logistic Regression
-
-🔹 Step 9: Model Evaluation
-
+🔹 Evaluate the Model
+python
+Copy
+Edit
 y_pred = model.predict(X_test)
 acc = accuracy_score(y_test, y_pred)
 print(f"✅ Model Accuracy: {acc:.4f}")
+Predicts on the test set and prints the model’s accuracy.
 
-Made predictions on test data
-
-Calculated accuracy as the evaluation metric
-
-✅ Printed final performance (e.g., 0.95 → 95% accuracy)
-
-🔹 Step 10: Save Model & Vectorizer
-
+🔹 Save the Model and Vectorizer
+python
+Copy
+Edit
 with open('fake_news_model.pkl', 'wb') as f:
     pickle.dump(model, f)
 
 with open('vectorizer.pkl', 'wb') as f:
     pickle.dump(vectorizer, f)
 
-📦 Saved:
+print("🎉 Model and vectorizer saved successfully.")
+Saves both the model and vectorizer into .pkl files using pickle.
 
-fake_news_model.pkl: the trained model
+These files will be used later for prediction in the frontend app.
 
-vectorizer.pkl: the TF-IDF vectorizer
-✅ These files are reused in the Streamlit app (app.py) for live predictions
+✅ Summary of Pipeline
+Loaded and cleaned the dataset
 
-🎯 Summary
-✅ Collected & cleaned raw text data
+Combined text columns into one
 
-✅ Applied NLP preprocessing: stopword removal, lemmatization, TF-IDF
+Preprocessed and lemmatized the text
 
-✅ Built a Logistic Regression model
+Vectorized the text using TF-IDF
 
-✅ Achieved high accuracy
+Trained a logistic regression model
 
-✅ Created serialized .pkl files for deployment
+Evaluated and saved the model for deployment
 
+You can now use this trained model and vectorizer in your Streamlit web app (app.py) to create a real-time Fake News Detector!
